@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Float, Table, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Float, Table, Date, ForeignKey
 from repositories.db.base_repository import Base
 
 class Movie(Base):

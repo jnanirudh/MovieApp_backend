@@ -3,7 +3,8 @@ from pydantic import BaseModel
 from datetime import date
 from typing import Optional, List
 
-class MovieBase(BaseModel):
+# Base model inherited by
+class MovieBase(BaseModel): # Every Pydantic schema must eventually trace back to BaseModel
     id: int
     title: str
     genre: Optional[str] = None
@@ -14,25 +15,27 @@ class MovieBase(BaseModel):
         orm_mode = True 
 
 
-class HomePage_List(BaseModel):
+# Home page list
+class HomePageList(BaseModel):
     total: int  
     page: int                         
     limit: int                         
-    results: List[MovieSummary]       
+    results: List[MovieBase]       
 
     class Config:
         orm_mode = True
 
 
+# Search result
 class SearchResult(BaseModel):
     query: str                          
     total: int                        
-    results: List[MovieSummary]
+    results: List[MovieBase]
 
     class Config:
         orm_mode = True
 
-
+# For the Details page
 class MovieDetail(MovieBase):
     director: Optional[str] = None
     release_date: Optional[date] = None

@@ -1,18 +1,14 @@
-import sys
-import os
-
-# Tell Python where src/ is so our app modules can be found
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
 import httpx
+import os
 import time
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from repositories.models.movie_model import Movie
-from config.config import settings
+from app.database import SessionLocal
+from app.models.movie import Movie, Genre
+from dotenv import load_dotenv
 
-TMDB_API_KEY = settings.TMDB_API_KEY
-BASE_URL = settings.TMDB_BASE_URL
+load_dotenv()
+TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+BASE_URL = "https://api.themoviedb.org/3"
 
 
 def tmdb_get(url: str, params: dict, retries: int = 5) -> dict:
@@ -64,14 +60,14 @@ def fetch_popular_movies(pages: int = 10):
                 print(f"  Could not fetch details for {item['title']}: {e}. Skipping.")
                 continue
 
-            # Extract director from credits
+            # Extract director
             director = None
             crew = detail.get("credits", {}).get("crew", [])
             directors = [p["name"] for p in crew if p.get("job") == "Director"]
             if directors:
                 director = directors[0]
 
-            # Extract US certification (age rating)
+            # Extract US certification
             certification = None
             for entry in detail.get("release_dates", {}).get("results", []):
                 if entry.get("iso_3166_1") == "US":
@@ -81,20 +77,31 @@ def fetch_popular_movies(pages: int = 10):
                             certification = cert
                             break
 
-            # Field names must match Movie model exactly
             movie = Movie(
                 id=item["id"],
                 title=item["title"],
                 overview=item.get("overview"),
                 poster_path=item.get("poster_path"),
-                release_date=item.get("release_date") or None,
-                rating=item.get("vote_average"),       # model uses 'rating'
-                original_lang=item.get("original_language"),  # model uses 'original_lang'
+                backdrop_path=item.get("backdrop_path"),
+                release_date=item.get("release_date"),
+                vote_average=item.get("vote_average"),
+                original_language=item.get("original_language"),
                 runtime=detail.get("runtime"),
                 director=director,
                 certification=certification,
             )
 
+            # Fix: commit each genre individually so duplicates are never batched
+            for g in detail.get("genres", []):
+                genre = db.query(Genre).filter(Genre.id == g["id"]).first()
+                if not genre:
+                    genre = Genre(id=g["id"], name=g["name"])
+                    db.add(genre)
+                    db.commit()
+                    db.refresh(genre)
+                movie.genres.append(genre)
+
+            # Commit each movie individually
             try:
                 db.add(movie)
                 db.commit()
