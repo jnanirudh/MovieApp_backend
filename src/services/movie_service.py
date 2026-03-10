@@ -1,8 +1,9 @@
 from repositories.movie_repo import MovieRepo
-from utils.exceptions import NotFoundError
+from contract.exceptions.exceptions import NotFoundError
+# No schema imports needed — service returns dicts, FastAPI's response_model handles conversion
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from database import get_db
+from startup.database import get_db
 
 class MovieService:
 
@@ -14,14 +15,18 @@ class MovieService:
 
         if not movies:
             raise NotFoundError("Movies")
-        return movies
+
+        # Return a dict — FastAPI's response_model uses orm_mode to convert Movie objects inside 'results'
+        return {"total": len(movies), "page": page, "limit": limit, "results": movies}
 
     def search_movies(self, query: str):
-        results = self.movie_repo.search_movies(query=query) 
+        results = self.movie_repo.search_movies(query=query)
 
         if not results:
             raise NotFoundError(f"Movies matching '{query}'")
-        return results
+
+        # Same pattern — dict return, FastAPI handles ORM → schema conversion
+        return {"query": query, "total": len(results), "results": results}
 
     def get_movie_by_id(self, movie_id: int):
         movie = self.movie_repo.get_movie_by_id(movie_id=movie_id) # Returns the movie object

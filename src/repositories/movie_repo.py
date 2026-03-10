@@ -6,7 +6,7 @@ class MovieRepo(BaseRepository):
         return self.session.query(Movie).offset((page - 1) * limit).limit(limit).all()
 
     def search_movies(self, query: str):
-        return self.session.query(Movie).filter(Movie.title.contains(query)).all()
+        return self.session.query(Movie).filter(Movie.title.ilike(f"%{query}%")).all() # '%war machine%' matches 'War Machine' -- Uses ILIKE 
 
     def get_movie_by_id(self, movie_id: int):
         return self.session.query(Movie).filter(Movie.id == movie_id).first()

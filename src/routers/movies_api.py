@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
-from services.movie_service import MovieService, get_movie_service # To forward the request to the service layer
-from output.schemas.movie_schema import HomePageList, SearchResult, MovieDetail # To get the response model from Schema
+from services.movie_service import MovieService, get_movie_service
+from contract.schemas.movie_schema import HomePageList, SearchResult, MovieDetail
 
 router = APIRouter(prefix="/api/movies", tags= ["Movies"])
 

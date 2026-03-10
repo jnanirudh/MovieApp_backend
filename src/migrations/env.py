@@ -4,12 +4,11 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# Add src/ to path so imports like 'repositories.db.base_repository' work
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from repositories.db.base_repository import Base
-from repositories.models import movie_model  # Import models so Base knows about them
-from config.config import settings           # To read DATABASE_URL from .env
+from repositories.models import movie_model # Import models so Base knows about them
+from config.config import settings # To read DATABASE_URL from .env
 
 config = context.config
 

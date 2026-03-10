@@ -9,7 +9,7 @@ class MovieBase(BaseModel): # Every Pydantic schema must eventually trace back t
     title: str
     genre: Optional[str] = None
     rating: Optional[float] = None
-    poster_url: Optional[str] = None
+    poster_path: Optional[str] = None  
 
     class Config:
         orm_mode = True 
